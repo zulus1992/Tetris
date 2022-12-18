@@ -5,7 +5,7 @@ namespace Tetris
     public partial class GameForm : Form
     {
         private static int CELL_SIZE = 20;
-        private static int INTERVAL = 500;
+        private static int INTERVAL = 400;
 
         private readonly int _width;
         private readonly int _height;
@@ -42,10 +42,8 @@ namespace Tetris
 
         private void InitNewFigure()
         {
-            Random rand = new Random();
-            var randValue = rand.Next(1, 7);
-            figure = FigureFactory.Create(randValue);
-            for (var i = 0; i < 4; i++)
+            figure = FigureFactory.Get();
+            for (var i = 0; i < (figure.Length+1)/2; i++)
                 figure[1, i] += (_width - 3) / 2;
         }
 
@@ -60,7 +58,7 @@ namespace Tetris
                         graphics.FillRectangle(Brushes.Black, i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                         graphics.DrawRectangle(Pens.Black, i * CELL_SIZE, j * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                     }
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < (figure.Length + 1) / 2; i++)
             {
                 graphics.FillRectangle(Brushes.White, figure[1, i] * CELL_SIZE, figure[0, i] * CELL_SIZE, CELL_SIZE, CELL_SIZE);
                 graphics.DrawRectangle(Pens.White, figure[1, i] * CELL_SIZE, figure[0, i] * CELL_SIZE, CELL_SIZE, CELL_SIZE);
@@ -71,7 +69,7 @@ namespace Tetris
 
         private bool IsOutOfField()
         {
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < (figure.Length + 1) / 2; i++)
                 if (figure[1, i] < 0
                     || figure[1, i] >= _width
                     || figure[0, i] < 0
@@ -81,12 +79,15 @@ namespace Tetris
                     return true;
             return false;
         }
+        
+
 
         private void Timer_Tick(object sender, EventArgs e)
         {
-            if (field[_width / 2, 0] == 1)
+            for(var i=0;i<_width;i++)
+                if(field[i, 0] == 1)
                 ShowStatistic();
-            for (int i = 0; i < 4; i++)
+            for (int i = 0; i < (figure.Length+1)/2; i++)
                 figure[0, i]++;
             for (int i = _height - 1; i > 1; i--)
             {
@@ -101,7 +102,7 @@ namespace Tetris
             }
             if (IsOutOfField())
             {
-                for (int i = 0; i < 4; i++)
+                for (int i = 0; i < (figure.Length + 1) / 2; i++)
                     field[figure[1, i], --figure[0, i]]++;
                 InitNewFigure();
             }
@@ -113,31 +114,25 @@ namespace Tetris
             switch (e.KeyCode)
             {
                 case Keys.A:
-                    for (int i = 0; i < 4; i++)
-                        figure[1, i]--;
-                    if (IsOutOfField())
-                        for (int i = 0; i < 4; i++)
-                            figure[1, i]++;
-                    break;
                 case Keys.D:
-                    for (int i = 0; i < 4; i++)
-                        figure[1, i]++;
+                    for (int i = 0; i < (figure.Length+1)/2; i++)
+                        figure[1, i] = e.KeyCode == Keys.A ? figure[1, i] - 1 : figure[1, i] + 1;
                     if (IsOutOfField())
-                        for (int i = 0; i < 4; i++)
-                            figure[1, i]--;
+                        for (int i = 0; i < (figure.Length + 1) / 2; i++)
+                            figure[1, i] = e.KeyCode == Keys.A ? figure[1, i] + 1 : figure[1, i] - 1;
                     break;
                 case Keys.Space:
-                    var shapeT = new int[2, 4];
+                    var shapeT = new int[2, (figure.Length + 1) / 2];
                     Array.Copy(figure, shapeT, figure.Length);
                     int maxx = 0, maxy = 0;
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < (figure.Length + 1) / 2; i++)
                     {
                         if (figure[0, i] > maxy)
                             maxy = figure[0, i];
                         if (figure[1, i] > maxx)
                             maxx = figure[1, i];
                     }
-                    for (int i = 0; i < 4; i++)
+                    for (int i = 0; i < (figure.Length + 1) / 2; i++)
                     {
                         int temp = figure[0, i];
                         figure[0, i] = maxy - (maxx - figure[1, i]) - 1;
@@ -149,19 +144,31 @@ namespace Tetris
             }
         }
 
-        private void toolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            var settingForm = new SettingForm();
-            this.Hide();
-            settingForm.Show();
-        }
-
         private void ShowStatistic()
 
         {
             var statisticForm = new StatisticForm(points);
             this.Hide();
             statisticForm.Show();
+        }
+
+        private void äîáàâèòüÔèãóðóToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var createForm = new CreateForm();
+            this.Hide();
+            createForm.Show();
+        }
+
+        private void toolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            var settingForm = new SettingForm();
+            this.Hide();
+            settingForm.Show();
+        }
+
+        private void toolStripMenuItem_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
